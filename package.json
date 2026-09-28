@@ -1,0 +1,17 @@
+{
+  "name": "codesync",
+  "private": true,
+  "workspaces": ["apps/api", "apps/web"],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace @codesync/api",
+    "dev:web": "npm run dev --workspace @codesync/web",
+    "build": "npm run build --workspace @codesync/api && npm run build --workspace @codesync/web",
+    "db:generate": "npm run db:generate --workspace @codesync/api",
+    "db:migrate": "npm run db:migrate --workspace @codesync/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": { "node": ">=22" }
+}
