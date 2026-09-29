@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from "react-router-dom";
 import type { OnMount } from "@monaco-editor/react";
 import * as Y from "yjs";
-import { MonacoBinding } from "y-monaco";
+import type { MonacoBinding } from "y-monaco";
 import { HocuspocusProvider } from "@hocuspocus/provider";
 import { api, establishSession, getAccessToken, restoreSession, setAccessToken, wsUrl, type Room, type RunOutput, type User } from "./api";
 
@@ -148,7 +148,19 @@ function RoomPage({ user, onLogout }: RoomPageProps) {
     provider.awareness?.on("change", updateParticipants); updateParticipants();
     return () => { provider.off("status", onStatus); provider.off("synced", onSynced); provider.awareness?.off("change", updateParticipants); yLanguage.unobserve(updateLanguage); bindingRef.current?.destroy(); provider.destroy(); doc.destroy(); };
   }, [provider, doc, yLanguage, user]);
-  const onMount: OnMount = (editor, monaco) => { editorRef.current = editor; monacoRef.current = monaco; bindingRef.current?.destroy(); bindingRef.current = new MonacoBinding(doc.getText("code"), editor.getModel()!, new Set([editor]), provider.awareness); };
+  // const onMount: OnMount = (editor, monaco) => { editorRef.current = editor; monacoRef.current = monaco; bindingRef.current?.destroy(); bindingRef.current = new MonacoBinding(doc.getText("code"), editor.getModel()!, new Set([editor]), provider.awareness); };
+  const onMount: OnMount = async (editor, monaco) => { 
+    editorRef.current = editor; 
+    monacoRef.current = monaco;
+    const { MonacoBinding } = await import("y-monaco"); 
+    bindingRef.current?.destroy(); 
+    bindingRef.current = new MonacoBinding(
+      doc.getText("code"), 
+      editor.getModel()!, 
+      new Set([editor]), 
+      provider.awareness
+    ); 
+  };
   const changeLanguage = (value: "javascript" | "python") => { yLanguage.set("language", value); setLanguage(value); };
   const run = async () => {
     if (!editorRef.current) return;
